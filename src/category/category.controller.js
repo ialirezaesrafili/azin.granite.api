@@ -19,7 +19,7 @@ class CategoryController {
      */
     async createCategory(req, res, next) {
         try {
-            const {title, description, seoWords} = req.body;
+            const {title, description, seoWords, subDetails, otherOptions} = req.body;
             const icon = req.file ? req.file?.path : null;
 
             // Validate the title
@@ -29,6 +29,8 @@ class CategoryController {
                 });
             }
             let parsedSeoWords = [];
+            let parsedOtherOptions = []
+            let parsedSubDetails = []
             if (seoWords) {
                 try {
                     // Attempt to parse seoWords as JSON
@@ -43,11 +45,34 @@ class CategoryController {
             }
             // Await the result from the service layer
 
+            if (otherOptions) {
+                try {
+                    parsedOtherOptions = otherOptions ? JSON.parse(otherOptions) : [];
+                } catch (error) {
+                    return res.status(httpStatusCodes.BAD_REQUEST).json({
+                        message: "Invalid format for otherOptions. it must be a JSON array.",
+                    })
+                }
+            }
+
+
+            try {
+                parsedSubDetails = subDetails ? JSON.parse(subDetails) : [];
+
+            } catch (error) {
+                return res.status(httpStatusCodes.BAD_REQUEST).json({
+                    message: "Invalid format for subDetails. It must be a JSON array.",
+                })
+            }
+
+
             const category = await this.#categoryService.createCategory({
                 title,
                 icon,
                 description,
-                seoWords: parsedSeoWords
+                seoWords: parsedSeoWords,
+                subDetails: parsedSubDetails,
+                otherOptions: parsedOtherOptions
             });
 
 
@@ -139,7 +164,7 @@ class CategoryController {
 
     async updateCategoryById(req, res, next) {
         try {
-            const {title, description, seoWords, isActive} = req.body;
+            const {title, description, seoWords, otherOptions, subDetails, isActive} = req.body;
             const {id: catId} = req.params;
 
             // Check if catId is a valid ObjectId
@@ -163,8 +188,9 @@ class CategoryController {
                     message: "Invalid format for category title"
                 });
             }
-
             let parsedSeoWords = seoWords ? JSON.parse(seoWords) : [];
+            let parsedOtherOptions = otherOptions ? JSON.parse(otherOptions) : [];
+            let parsedSubDetails = subDetails ? JSON.parse(subDetails) : [];
 
             // Call the service to update the category
             const category = await this.#categoryService.updateCategoryById({
@@ -173,6 +199,8 @@ class CategoryController {
                 description,
                 icon,
                 seoWords: parsedSeoWords,
+                subDetails: parsedSubDetails,
+                otherOptions: parsedOtherOptions,
                 isActive
             });
 
@@ -189,7 +217,7 @@ class CategoryController {
 
     async deleteCategoryById(req, res, next) {
         try {
-            const { id: catId } = req.params;
+            const {id: catId} = req.params;
 
             if (!mongoose.Types.ObjectId.isValid(catId)) {
                 return res.status(httpStatusCodes.BAD_REQUEST).json({

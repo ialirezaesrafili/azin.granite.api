@@ -12,7 +12,7 @@ class CategoryService {
     }
 
     // create category
-    async createCategory({title, icon = null, description, seoWords}) {
+    async createCategory({title, icon = null, description, seoWords, subDetails, otherOptions}) {
         try {
             // Check if the category already exists
             const existingCategory = await this.#categoryModel.findOne({title}).lean();
@@ -26,6 +26,8 @@ class CategoryService {
                 slug: title.trim().replace(/\s+/g, '-').toLowerCase(),
                 description,
                 seoWords,
+                subDetails,
+                otherOptions,
                 isActive: true,
             });
 
@@ -75,7 +77,7 @@ class CategoryService {
         }
     }
 
-    async updateCategoryById({catId, title, description, icon, seoWords, isActive}) {
+    async updateCategoryById({catId, title, description, icon, seoWords, subDetails, otherOptions, isActive}) {
         try {
 
 
@@ -94,6 +96,8 @@ class CategoryService {
                     icon,
                     seoWords,
                     slug: title?.trim().replace(/\s+/g, '-').toLowerCase(),
+                    subDetails,
+                    otherOptions,
                     isActive
                 },
                 {new: true}
